@@ -7,6 +7,10 @@ import pygame
 if t.TYPE_CHECKING:
     from src.enums import State
 
+# Constants
+WORLD_GRAVITY = 70
+MAX_FALL_VELOCITY = 300
+
 # Canvas
 screen: pygame.Surface
 srect: pygame.Rect
