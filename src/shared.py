@@ -6,6 +6,7 @@ import pygame
 
 if t.TYPE_CHECKING:
     from src.enums import State
+    from src.utils import Camera, WorldMap
 
 # Constants
 WORLD_GRAVITY = 70
@@ -14,6 +15,7 @@ MAX_FALL_VELOCITY = 300
 # Canvas
 screen: pygame.Surface
 srect: pygame.Rect
+camera: Camera
 
 # Events
 events: list[pygame.event.Event]
@@ -27,3 +29,8 @@ clock: pygame.Clock
 
 # States
 next_state: State | None
+
+# Objects
+world_map: WorldMap
+
+# Flags

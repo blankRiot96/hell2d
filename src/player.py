@@ -34,6 +34,7 @@ class Player:
             dx = 0
 
         self.collider.pos += dx, dy
+        shared.camera.attach_to(self.collider.pos)
 
     def draw(self):
-        shared.screen.blit(self.image, self.collider.pos)
+        shared.screen.blit(self.image, shared.camera.transform(self.collider.pos))

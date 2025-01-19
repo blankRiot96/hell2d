@@ -1,16 +1,35 @@
+import pygame
+
 from src import shared, utils
 from src.enums import State
+from src.floor import Floor
 from src.player import Player
 
 
 class GameState:
     def __init__(self) -> None:
+        self.clean_up_world()
+
+        shared.camera = utils.Camera()
         self.player = Player()
-        self.floor = utils.Collider(pos=(100, 400), size=(600, 70))
+        self.entities = shared.world_map.to_real_entities()
+
+    def clean_up_world(self):
+        utils.Collider.all_colliders.clear()
+
+    def on_editor_state(self):
+        if shared.kp[pygame.K_e]:
+            shared.next_state = State.EDITOR
 
     def update(self):
         self.player.update()
+        self.on_editor_state()
+
+        for entity in self.entities:
+            entity.update()
 
     def draw(self):
         self.player.draw()
-        self.floor.draw()
+
+        for entity in self.entities:
+            entity.draw()

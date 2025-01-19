@@ -1,0 +1,5 @@
+- Add `Grid` placement mode
+- Add GUI selection of placement mode
+- Add GUI selection of entity to place
+
+

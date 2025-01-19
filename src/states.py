@@ -1,6 +1,7 @@
 import typing as t
 
-from src import shared
+from src import shared, utils
+from src.editor_state import EditorState
 from src.enums import State
 from src.game_state import GameState
 
@@ -15,9 +16,11 @@ class StateManager:
     def __init__(self) -> None:
         self.state_dict: dict[State, StateLike] = {
             State.GAME: GameState,
+            State.EDITOR: EditorState,
         }
+        shared.world_map = utils.WorldMap()
 
-        shared.next_state = State.GAME
+        shared.next_state = State.EDITOR
         self.set_state()
 
     def set_state(self):
