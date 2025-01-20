@@ -27,7 +27,6 @@ class Player:
         dx *= Player.MAX_HORIZONTAL_SPEED * shared.dt
 
         sides = self.collider.get_collision_sides(dx, dy)
-        # print(sides)
         if utils.CollisionSide.BOTTOM in sides or utils.CollisionSide.TOP in sides:
             self.gravity.velocity = 0
             dy = 0

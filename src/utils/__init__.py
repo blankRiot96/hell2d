@@ -170,37 +170,41 @@ class Collider:
         """Returns empty set if no collision"""
 
         sides = set()
+        possible_x = []
+        possible_y = []
+
         for collider in Collider.all_colliders:
             if collider is self:
                 continue
 
-            c = lambda x, y: self.rect.move(x, y).colliderect(collider.rect)
+            is_colliding_x = self.rect.move(dx, 0).colliderect(collider.rect)
+            is_colliding_y = self.rect.move(0, dy).colliderect(collider.rect)
 
-            if c(dx, 0) and dx < 0:
-                new_pos = collider.rect.right
-                if new_pos > self.pos.x:
-                    self.pos.x = new_pos
-
+            if is_colliding_x and dx < 0:
+                possible_x.append(collider.rect.right)
                 sides.add(CollisionSide.LEFT)
-            elif c(dx, 0) and dx > 0:
-                new_pos = collider.pos.x - self.size[0]
-                if new_pos < self.pos.x:
-                    self.pos.x = new_pos
-
+            elif is_colliding_x and dx > 0:
+                possible_x.append(collider.pos.x - self.size[0])
                 sides.add(CollisionSide.RIGHT)
 
-            if c(0, dy) and dy < 0:
-                new_pos = collider.rect.bottom
-                if new_pos > self.pos.y:
-                    self.pos.y = new_pos
-
+            if is_colliding_y and dy < 0:
+                possible_y.append(collider.rect.bottom)
                 sides.add(CollisionSide.TOP)
-            elif c(0, dy) and dy > 0:
-                new_pos = collider.pos.y - self.size[1]
-                if new_pos < self.pos.y:
-                    self.pos.y = new_pos
-
+            elif is_colliding_y and dy > 0:
+                possible_y.append(collider.pos.y - self.size[1])
                 sides.add(CollisionSide.BOTTOM)
+
+        if possible_x:
+            if dx < 0:
+                self.pos.x = max(possible_x)
+            else:
+                self.pos.x = min(possible_x)
+
+        if possible_y:
+            if dy < 0:
+                self.pos.y = max(possible_y)
+            else:
+                self.pos.y = min(possible_y)
 
         return sides
 
