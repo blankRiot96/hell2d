@@ -27,10 +27,11 @@ class Player:
         dx *= Player.MAX_HORIZONTAL_SPEED * shared.dt
 
         sides = self.collider.get_collision_sides(dx, dy)
+        # print(sides)
         if utils.CollisionSide.BOTTOM in sides:
             self.gravity.velocity = 0
             dy = 0
-        if {utils.CollisionSide.LEFT, utils.CollisionSide.RIGHT} <= sides:
+        if utils.CollisionSide.LEFT in sides or utils.CollisionSide.RIGHT in sides:
             dx = 0
 
         self.collider.pos += dx, dy
@@ -38,3 +39,4 @@ class Player:
 
     def draw(self):
         shared.screen.blit(self.image, shared.camera.transform(self.collider.pos))
+        self.collider.draw()

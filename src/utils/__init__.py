@@ -4,6 +4,7 @@ import time
 import typing as t
 from enum import Enum, auto
 from pathlib import Path
+from types import new_class
 
 import pygame
 
@@ -176,13 +177,29 @@ class Collider:
             c = lambda x, y: self.rect.move(x, y).colliderect(collider.rect)
 
             if c(dx, 0) and dx < 0:
+                new_pos = collider.rect.right + 1
+                if new_pos > self.pos.x:
+                    self.pos.x = new_pos
+
                 sides.add(CollisionSide.LEFT)
-            if c(dx, 0) and dx > 0:
+            elif c(dx, 0) and dx > 0:
+                new_pos = collider.pos.x - self.size[0] - 1
+                if new_pos < self.pos.x:
+                    self.pos.x = new_pos
+
                 sides.add(CollisionSide.RIGHT)
+
             if c(0, dy) and dy < 0:
+                new_pos = collider.rect.bottom
+                if new_pos > self.pos.y:
+                    self.pos.y = new_pos
+
                 sides.add(CollisionSide.TOP)
-            if c(0, dy) and dy > 0:
-                self.pos.y = collider.pos.y - self.size[1]
+            elif c(0, dy) and dy > 0:
+                new_pos = collider.pos.y - self.size[1]
+                if new_pos < self.pos.y:
+                    self.pos.y = new_pos
+
                 sides.add(CollisionSide.BOTTOM)
 
         return sides

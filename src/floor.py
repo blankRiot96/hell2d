@@ -11,3 +11,4 @@ class Floor:
 
     def draw(self):
         shared.screen.blit(self.image, shared.camera.transform(self.collider.pos))
+        self.collider.draw()
