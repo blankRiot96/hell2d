@@ -28,9 +28,10 @@ class Player:
 
         sides = self.collider.get_collision_sides(dx, dy)
         # print(sides)
-        if utils.CollisionSide.BOTTOM in sides:
+        if utils.CollisionSide.BOTTOM in sides or utils.CollisionSide.TOP in sides:
             self.gravity.velocity = 0
             dy = 0
+
         if utils.CollisionSide.LEFT in sides or utils.CollisionSide.RIGHT in sides:
             dx = 0
 

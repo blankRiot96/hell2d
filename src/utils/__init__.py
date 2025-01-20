@@ -177,13 +177,13 @@ class Collider:
             c = lambda x, y: self.rect.move(x, y).colliderect(collider.rect)
 
             if c(dx, 0) and dx < 0:
-                new_pos = collider.rect.right + 1
+                new_pos = collider.rect.right
                 if new_pos > self.pos.x:
                     self.pos.x = new_pos
 
                 sides.add(CollisionSide.LEFT)
             elif c(dx, 0) and dx > 0:
-                new_pos = collider.pos.x - self.size[0] - 1
+                new_pos = collider.pos.x - self.size[0]
                 if new_pos < self.pos.x:
                     self.pos.x = new_pos
 
