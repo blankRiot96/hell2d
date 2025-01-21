@@ -1,3 +1,5 @@
+- Add player spawner
+- Add player y threshold mechanism
 - Add `Grid` placement mode
 - Add GUI selection of placement mode
 - Add GUI selection of entity to place

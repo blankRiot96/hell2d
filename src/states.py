@@ -3,6 +3,7 @@ import typing as t
 from src import shared, utils
 from src.editor_state import EditorState
 from src.enums import State
+from src.floor import Floor
 from src.game_state import GameState
 
 
@@ -18,7 +19,9 @@ class StateManager:
             State.GAME: GameState,
             State.EDITOR: EditorState,
         }
-        shared.world_map = utils.WorldMap()
+
+        shared.camera = utils.Camera()
+        shared.world_map = utils.WorldMap("assets/map.json", [Floor])
 
         shared.next_state = State.EDITOR
         self.set_state()

@@ -4,14 +4,14 @@ import time
 import typing as t
 from enum import Enum, auto
 from pathlib import Path
-from types import new_class
 
 import pygame
+import ujson
 
 from src import shared
 
 
-class WorldEntity:
+class MapItem:
     """Placeholder for the real entities"""
 
     def __init__(self, pos, entity_type, image) -> None:
@@ -27,12 +27,38 @@ class WorldEntity:
 class WorldMap:
     """The entire world, categorized in a map."""
 
-    def __init__(self) -> None:
+    def __init__(self, file_path: str | Path, entity_classes: list[t.Type]) -> None:
         # self.chunks: dict[tuple[int, int], list[WorldEntity]] = {}
-        self.entities: list[WorldEntity] = []
 
-    def to_real_entities(self):
-        return [entity.entity_type(entity.pos) for entity in self.entities]
+        self.file_path = file_path
+        self.entity_classes = entity_classes
+        self.entities: list[MapItem] = [
+            MapItem(entity.pos, entity.__class__, entity.image)
+            for entity in self.load()
+        ]
+
+    def dump(self, file_path: str | Path) -> None:
+        jsonable_map = [
+            [entity.entity_type.__name__, (entity.pos.x, entity.pos.y)]
+            for entity in self.entities
+        ]
+
+        with open(file_path, "w") as f:
+            ujson.dump(jsonable_map, f, indent=2)
+
+    def load(self) -> list:
+        entities = []
+        reverse_map = {
+            entity_type.__name__: entity_type for entity_type in self.entity_classes
+        }
+
+        with open(self.file_path) as f:
+            json_map = ujson.load(f)
+            for entity_class, entity_pos in json_map:
+                entity = reverse_map[entity_class](entity_pos)
+                entities.append(entity)
+
+        return entities
 
     def draw(self):
         for entity in self.entities:
@@ -64,7 +90,7 @@ class WorldPlacementHandler:
             return
 
         shared.world_map.entities.append(
-            WorldEntity(
+            MapItem(
                 self.current_entity_pos,
                 self.current_entity_type,
                 self.current_entity_image,

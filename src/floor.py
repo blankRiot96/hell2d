@@ -6,6 +6,10 @@ class Floor:
         self.image = utils.load_image("assets/floor.png", False)
         self.collider = utils.Collider(pos=pos, size=self.image.get_size())
 
+    @property
+    def pos(self):
+        return self.collider.pos
+
     def update(self):
         pass
 
