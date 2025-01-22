@@ -1,16 +1,24 @@
+import itertools
+
 import pygame
 
 from src import shared, utils
 from src.enums import State
-from src.floor import Floor
 
 CAMERA_SPEED = 100
 
 
 class EditorState:
     def __init__(self) -> None:
+        self.item_selector = utils.ItemSelector(
+            topleft=(10, 10),
+            items={
+                cls.__name__: cls.get_placeholder_img()
+                for cls in shared.world_map.entity_classes
+            },
+            item_scale=0.75,
+        )
         self.world_placement_handler = utils.WorldPlacementHandler()
-        self.temp = utils.load_image("assets/floor.png", False)
 
     def on_game_state(self):
         if shared.kp[pygame.K_e]:
@@ -28,10 +36,18 @@ class EditorState:
         shared.camera.offset += dv * CAMERA_SPEED * shared.dt
 
     def update(self):
+        self.item_selector.update()
         self.scroll_camera()
-        self.world_placement_handler.update(Floor, self.temp)
+
+        if not self.item_selector.is_being_interacted_with:
+            cls = shared.world_map.reverse_entity_class_map[
+                self.item_selector.currently_selected_item
+            ]
+            self.world_placement_handler.update(cls, cls.get_placeholder_img())
         self.on_game_state()
 
     def draw(self):
-        self.world_placement_handler.draw()
+        self.item_selector.draw()
+        if not self.item_selector.is_being_interacted_with:
+            self.world_placement_handler.draw()
         shared.world_map.draw()

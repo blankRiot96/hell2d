@@ -25,6 +25,8 @@ class Core:
         shared.kr = pygame.key.get_just_released()
         shared.mouse_pos = pygame.Vector2(pygame.mouse.get_pos())
         shared.mouse_press = pygame.mouse.get_pressed()
+        shared.mjp = pygame.mouse.get_just_pressed()
+        shared.mjr = pygame.mouse.get_just_released()
 
     def check_for_exit(self):
         for event in shared.events:

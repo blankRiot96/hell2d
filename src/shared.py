@@ -22,6 +22,8 @@ events: list[pygame.event.Event]
 mouse_pos: pygame.Vector2
 mouse_press: tuple[int, ...]
 keys: list[bool]
+mjp: list[bool]
+mjr: list[bool]
 kp: list[bool]
 kr: list[bool]
 dt: float

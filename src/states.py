@@ -5,6 +5,7 @@ from src.editor_state import EditorState
 from src.enums import State
 from src.floor import Floor
 from src.game_state import GameState
+from src.player import Player
 
 
 class StateLike(t.Protocol):
@@ -21,7 +22,7 @@ class StateManager:
         }
 
         shared.camera = utils.Camera()
-        shared.world_map = utils.WorldMap("assets/map.json", [Floor])
+        shared.world_map = utils.WorldMap("assets/map.json", [Floor, Player])
 
         shared.next_state = State.EDITOR
         self.set_state()

@@ -7,12 +7,20 @@ class Player:
     JUMP_VELOCITY = -150
     MAX_HORIZONTAL_SPEED = 40
 
-    def __init__(self) -> None:
+    def __init__(self, pos) -> None:
         self.image = utils.load_image(
             "assets/player.png", alpha=True, scale=0.4, bound=True
         )
-        self.collider = utils.Collider(size=self.image.get_size(), pos=(200, 0))
+        self.collider = utils.Collider(size=self.image.get_size(), pos=pos)
         self.gravity = utils.Gravity()
+
+    @classmethod
+    def get_placeholder_img(cls) -> pygame.Surface:
+        return utils.load_image("assets/player_placeholder.png", True, scale=0.4)
+
+    @property
+    def pos(self):
+        return self.collider.pos
 
     def update(self):
         dx, dy = 0, 0
@@ -26,13 +34,23 @@ class Player:
         dx += shared.keys[pygame.K_d] - shared.keys[pygame.K_a]
         dx *= Player.MAX_HORIZONTAL_SPEED * shared.dt
 
-        sides = self.collider.get_collision_sides(dx, dy)
-        if utils.CollisionSide.BOTTOM in sides or utils.CollisionSide.TOP in sides:
+        collider_data = self.collider.get_collision_data(dx, dy)
+        if (
+            utils.CollisionSide.BOTTOM in collider_data.colliders
+            or utils.CollisionSide.TOP in collider_data.colliders
+        ):
             self.gravity.velocity = 0
             dy = 0
 
-        if utils.CollisionSide.LEFT in sides or utils.CollisionSide.RIGHT in sides:
-            dx = 0
+        for side in [utils.CollisionSide.LEFT, utils.CollisionSide.RIGHT]:
+            if side in collider_data.colliders:
+                collider = collider_data.colliders[side]
+                y_diff = self.collider.rect.bottom - collider.pos.y
+                if y_diff > 30:
+                    dx = 0
+                else:
+                    dx = 0
+                    self.gravity.velocity = Player.JUMP_VELOCITY / 2
 
         self.collider.pos += dx, dy
         shared.camera.attach_to(self.collider.pos)
