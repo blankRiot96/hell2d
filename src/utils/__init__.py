@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import functools
+import itertools
+import os
 import sys
 import time
 import typing as t
@@ -173,32 +175,31 @@ class WorldPlacementHandler:
     """Handles the placement of entities into the world"""
 
     def __init__(self) -> None:
-        self.mode = PlacementMode.FREE
 
+        self.current_keybinds_file_chosen = "assets/editor_keybinds/1.json"
+        with open(self.current_keybinds_file_chosen) as f:
+            self.last_config = ujson.load(f)
+            self.last_read_time = time.time()
+
+        self.mode = PlacementMode.GRID
         self.current_entity_pos = pygame.Vector2()
-        self.current_entity_type = None
+        self.current_entity_type = shared.world_map.reverse_entity_class_map[
+            list(self.last_config.values())[0]
+        ]
         self.current_entity_image = pygame.Surface((50, 50))
+        self.crect = self.current_entity_image.get_rect()
+
+        self.placement_modes = itertools.cycle([PlacementMode.FREE, PlacementMode.GRID])
 
         self._last_placed_pos = pygame.Vector2(0, 0)
 
     def on_place(self):
-        clicked = False
-
-        potential_center = self.current_entity_pos + (
-            pygame.Vector2(self.current_entity_image.get_size()) / 2
-        )
-        if shared.mouse_press[0] and (
-            abs(self._last_placed_pos.x - potential_center.x) > 50
-            or abs(self._last_placed_pos.y - potential_center.y) > 30
-        ):
-            clicked = True
-
-        for event in shared.events:
-            if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
-                clicked = True
-
-        if not clicked:
+        if not shared.mouse_press[0]:
             return
+
+        for item in shared.world_map.entities:
+            if self.crect.colliderect(item.rect):
+                return False
 
         self._last_placed_pos = pygame.Vector2(
             self.current_entity_image.get_rect(topleft=self.current_entity_pos).center
@@ -211,13 +212,51 @@ class WorldPlacementHandler:
             )
         )
 
-    def update(self, current_entity_type, current_entity_image):
+    def is_config_valid(self, config) -> bool:
+        return True
+
+    def update(self):
+        if shared.kp[pygame.K_p]:
+            self.mode = next(self.placement_modes)
+
+        try:
+            if (
+                os.stat(self.current_keybinds_file_chosen).st_mtime
+                > self.last_read_time
+            ):
+                print("file changed")
+                with open(self.current_keybinds_file_chosen) as f:
+                    config = ujson.load(f)
+                    self.last_read_time = time.time()
+            else:
+                config = self.last_config
+        except FileNotFoundError:
+            config = self.last_config
+
+        if not self.is_config_valid(config):
+            config = self.last_config
+        else:
+            self.last_config = config
+
+        for keybind, class_name in config.items():
+            if shared.kp[getattr(pygame, keybind)]:
+                self.current_entity_type = shared.world_map.reverse_entity_class_map[
+                    class_name
+                ]
+
         if self.mode == PlacementMode.FREE:
             self.current_entity_pos = shared.mouse_pos + shared.camera.offset
+        elif self.mode == PlacementMode.GRID:
+            self.current_entity_pos = shared.mouse_pos + shared.camera.offset
+            width, height = self.current_entity_image.get_size()
+            self.current_entity_pos.x //= width
+            self.current_entity_pos.y //= height
 
-        self.current_entity_type = current_entity_type
-        self.current_entity_image = current_entity_image.copy()
-        self.current_entity_image.set_alpha(150)
+            self.current_entity_pos.x *= width
+            self.current_entity_pos.y *= height
+
+        self.current_entity_image = self.current_entity_type.get_placeholder_img()
+        self.crect = self.current_entity_image.get_rect(topleft=self.current_entity_pos)
 
         self.on_place()
 

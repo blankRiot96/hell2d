@@ -42,15 +42,11 @@ class Player:
             self.gravity.velocity = 0
             dy = 0
 
-        for side in [utils.CollisionSide.LEFT, utils.CollisionSide.RIGHT]:
-            if side in collider_data.colliders:
-                collider = collider_data.colliders[side]
-                y_diff = self.collider.rect.bottom - collider.pos.y
-                if y_diff > 30:
-                    dx = 0
-                else:
-                    dx = 0
-                    self.gravity.velocity = Player.JUMP_VELOCITY / 2
+        if (
+            utils.CollisionSide.RIGHT in collider_data.colliders
+            or utils.CollisionSide.LEFT in collider_data.colliders
+        ):
+            dx = 0
 
         self.collider.pos += dx, dy
         shared.camera.attach_to(self.collider.pos)
