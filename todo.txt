@@ -1,6 +1,9 @@
-- Fix glitch at 0:07
-- Add `Grid` placement mode
-- Add GUI selection of placement mode
-- Add GUI selection of entity to place
-
-
+- Render fire pit in map editor
+- Add main menu (character select, join game, host game)
+- Add default character data for everybody (default outfit, name (guest<Rn>))
+- In `Host Game` state: broadcast the server's ip to other devices connected in the network, along with host's name
+- Add Lobby State for host and other clients to wait
+- In `Join Game` state: list available servers using broadcasting
+- Allow users to click on server name to join server
+- Let the host start the game with a `start game` button + countdown for game start
+- Main gameplay development starts

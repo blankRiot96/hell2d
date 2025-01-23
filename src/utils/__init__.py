@@ -171,6 +171,55 @@ class PlacementMode(Enum):
     GRID = auto()
 
 
+class _CommandBar:
+    """Command Bar for the placement handler"""
+
+    HEIGHT = 40
+
+    def __init__(self) -> None:
+        self.command_just_ejected = False
+
+        self._command_text = ""
+        self._command_being_typed = False
+        self.font = load_font(None, 32)
+
+    def get_command(self) -> str:
+        return self._command_text
+
+    def update(self):
+        self.command_just_ejected = False
+        for event in shared.events:
+            if event.type == pygame.TEXTINPUT:
+                if self._command_being_typed:
+                    self._command_text += event.text
+
+                if event.text == ":":
+                    self._command_being_typed = True
+                    self._command_text = ""
+
+        if shared.kp[pygame.K_RETURN]:
+            self.command_just_ejected = True
+            self._command_being_typed = False
+
+    def draw(self):
+        if not self._command_being_typed:
+            return
+
+        bg_rect = pygame.Rect(
+            0,
+            shared.srect.height - _CommandBar.HEIGHT,
+            shared.srect.width,
+            _CommandBar.HEIGHT,
+        )
+        pygame.draw.rect(shared.screen, "purple", bg_rect)
+        text_surf = self.font.render(":" + self._command_text, True, "white")
+        text_rect = text_surf.get_rect()
+
+        text_rect.centery = bg_rect.centery
+        text_rect.x += 10
+        shared.screen.blit(text_surf, text_rect)
+
+
 class WorldPlacementHandler:
     """Handles the placement of entities into the world"""
 
@@ -192,6 +241,8 @@ class WorldPlacementHandler:
         self.placement_modes = itertools.cycle([PlacementMode.FREE, PlacementMode.GRID])
 
         self._last_placed_pos = pygame.Vector2(0, 0)
+
+        self.command_bar = _CommandBar()
 
     def on_place(self):
         if not shared.mouse_press[0]:
@@ -216,15 +267,26 @@ class WorldPlacementHandler:
         return True
 
     def update(self):
+        self.command_bar.update()
+        if self.command_bar._command_being_typed:
+            return
+
+        if self.command_bar.command_just_ejected:
+            file_name = self.command_bar.get_command()
+            self.current_keybinds_file_chosen = (
+                f"assets/editor_keybinds/{file_name}.json"
+            )
+            print(f"Keybinds file: {self.current_keybinds_file_chosen}")
+
         if shared.kp[pygame.K_p]:
             self.mode = next(self.placement_modes)
+            print(f"Switched to `{self.mode}`")
 
         try:
             if (
                 os.stat(self.current_keybinds_file_chosen).st_mtime
                 > self.last_read_time
-            ):
-                print("file changed")
+            ) or self.command_bar.command_just_ejected:
                 with open(self.current_keybinds_file_chosen) as f:
                     config = ujson.load(f)
                     self.last_read_time = time.time()
@@ -238,8 +300,14 @@ class WorldPlacementHandler:
         else:
             self.last_config = config
 
+        if self.command_bar.command_just_ejected:
+            self.current_entity_type = shared.world_map.reverse_entity_class_map[
+                list(self.last_config.values())[0]
+            ]
+
         for keybind, class_name in config.items():
             if shared.kp[getattr(pygame, keybind)]:
+                print(f"Current Entity selected: `{class_name}`")
                 self.current_entity_type = shared.world_map.reverse_entity_class_map[
                     class_name
                 ]
@@ -261,9 +329,12 @@ class WorldPlacementHandler:
         self.on_place()
 
     def draw(self):
-        shared.screen.blit(
-            self.current_entity_image, shared.camera.transform(self.current_entity_pos)
-        )
+        if not self.command_bar._command_being_typed:
+            shared.screen.blit(
+                self.current_entity_image,
+                shared.camera.transform(self.current_entity_pos),
+            )
+        self.command_bar.draw()
 
 
 class Camera:
@@ -313,6 +384,8 @@ def load_image(
 
 @functools.lru_cache
 def load_font(name: str | None, size: int) -> pygame.Font:
+    if name is None:
+        return pygame.Font(None, size)
     return pygame.Font(get_asset_path(name), size)
 
 

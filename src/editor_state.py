@@ -1,5 +1,3 @@
-import itertools
-
 import pygame
 
 from src import shared, utils
@@ -28,10 +26,11 @@ class EditorState:
         shared.camera.offset += dv * CAMERA_SPEED * shared.dt
 
     def update(self):
-        self.scroll_camera()
         self.world_placement_handler.update()
-        self.on_game_state()
+        if not self.world_placement_handler.command_bar._command_being_typed:
+            self.scroll_camera()
+            self.on_game_state()
 
     def draw(self):
-        self.world_placement_handler.draw()
         shared.world_map.draw()
+        self.world_placement_handler.draw()
