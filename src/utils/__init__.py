@@ -223,12 +223,26 @@ class _CommandBar:
 class WorldPlacementHandler:
     """Handles the placement of entities into the world"""
 
-    def __init__(self) -> None:
-
-        self.current_keybinds_file_chosen = "assets/editor_keybinds/1.json"
+    def __init__(
+        self,
+        starting_keybinds_file_name: str,
+        left_bounds: float | None = None,
+        right_bounds: float | None = None,
+        top_bounds: float | None = None,
+        bottom_bounds: float | None = None,
+    ) -> None:
+        self.check_if_dir_exists()
+        self.current_keybinds_file_chosen = (
+            f"assets/editor_keybinds/{starting_keybinds_file_name}.json"
+        )
         with open(self.current_keybinds_file_chosen) as f:
             self.last_config = ujson.load(f)
             self.last_read_time = time.time()
+
+        self.left_bounds = left_bounds
+        self.right_bounds = right_bounds
+        self.top_bounds = top_bounds
+        self.bottom_bounds = bottom_bounds
 
         self.mode = PlacementMode.GRID
         self.current_entity_pos = pygame.Vector2()
@@ -241,17 +255,27 @@ class WorldPlacementHandler:
         self.placement_modes = itertools.cycle([PlacementMode.FREE, PlacementMode.GRID])
 
         self._last_placed_pos = pygame.Vector2(0, 0)
+        self._last_free_placement = pygame.Vector2(0, 0)
+        self._out_of_bounds = False
 
         self.command_bar = _CommandBar()
 
+    def check_if_dir_exists(self):
+        if not Path("assets/editor_keybinds").exists():
+            raise FileNotFoundError(
+                "To use `WorldPlacementHandler` an editor_keybinds/ directory needs to be present and populated with keybinds"
+            )
+
     def on_place(self):
-        if not shared.mouse_press[0]:
+        if not shared.mouse_press[0] or self._out_of_bounds:
             return
 
         for item in shared.world_map.entities:
             if self.crect.colliderect(item.rect):
-                return False
+                return
 
+        if self.mode == PlacementMode.FREE:
+            self._last_free_placement = self.current_entity_pos.copy()
         self._last_placed_pos = pygame.Vector2(
             self.current_entity_image.get_rect(topleft=self.current_entity_pos).center
         )
@@ -312,9 +336,26 @@ class WorldPlacementHandler:
                     class_name
                 ]
 
-        if self.mode == PlacementMode.FREE:
-            self.current_entity_pos = shared.mouse_pos + shared.camera.offset
-        elif self.mode == PlacementMode.GRID:
+        self.current_entity_pos = shared.mouse_pos + shared.camera.offset
+
+        self._out_of_bounds = False
+        offset = self.current_entity_pos
+        if self.left_bounds is not None:
+            if offset.x < self.left_bounds:
+                self._out_of_bounds = True
+
+        if self.right_bounds is not None:
+            if offset.x > self.right_bounds:
+                self._out_of_bounds = True
+
+        if self.top_bounds is not None:
+            if offset.y < self.top_bounds:
+                self._out_of_bounds = True
+        if self.bottom_bounds is not None:
+            if offset.y > self.bottom_bounds:
+                self._out_of_bounds = True
+
+        if self.mode == PlacementMode.GRID:
             self.current_entity_pos = shared.mouse_pos + shared.camera.offset
             width, height = self.current_entity_image.get_size()
             self.current_entity_pos.x //= width
@@ -329,7 +370,7 @@ class WorldPlacementHandler:
         self.on_place()
 
     def draw(self):
-        if not self.command_bar._command_being_typed:
+        if not self.command_bar._command_being_typed and not self._out_of_bounds:
             shared.screen.blit(
                 self.current_entity_image,
                 shared.camera.transform(self.current_entity_pos),
@@ -338,7 +379,18 @@ class WorldPlacementHandler:
 
 
 class Camera:
-    def __init__(self) -> None:
+    def __init__(
+        self,
+        left_bounds: float | None = None,
+        right_bounds: float | None = None,
+        top_bounds: float | None = None,
+        bottom_bounds: float | None = None,
+    ) -> None:
+
+        self.left_bounds = left_bounds
+        self.right_bounds = right_bounds
+        self.top_bounds = top_bounds
+        self.bottom_bounds = bottom_bounds
         self.offset = pygame.Vector2()
 
     def attach_to(self, pos, smoothness_factor=0.08):
@@ -348,6 +400,25 @@ class Camera:
         self.offset.y += (
             pos[1] - self.offset.y - (shared.srect.height // 2)
         ) * smoothness_factor
+
+    def bound(self):
+        offset = self.offset
+
+        if self.left_bounds is not None:
+            if offset.x < self.left_bounds:
+                offset.x = self.left_bounds
+
+        if self.right_bounds is not None:
+            if offset.x > self.right_bounds - shared.srect.width:
+                offset.x = self.right_bounds - shared.srect.width
+
+        if self.top_bounds is not None:
+            if offset.y < self.top_bounds:
+                offset.y = self.top_bounds
+
+        if self.bottom_bounds is not None:
+            if offset.y > self.bottom_bounds - shared.srect.height:
+                offset.y = self.bottom_bounds - shared.srect.height
 
     def transform(self, pos) -> pygame.Vector2 | pygame.Rect | pygame.FRect:
         if isinstance(pos, pygame.Rect) or isinstance(pos, pygame.FRect):

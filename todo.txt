@@ -1,4 +1,3 @@
-- Render fire pit in map editor
 - Add main menu (character select, join game, host game)
 - Add default character data for everybody (default outfit, name (guest<Rn>))
 - In `Host Game` state: broadcast the server's ip to other devices connected in the network, along with host's name

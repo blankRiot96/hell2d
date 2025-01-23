@@ -21,7 +21,10 @@ class StateManager:
             State.EDITOR: EditorState,
         }
 
-        shared.camera = utils.Camera()
+        shared.camera = utils.Camera(
+            bottom_bounds=shared.FIRE_PIT_START_Y
+            + utils.load_image("assets/firepit.png", True, bound=True).get_height()
+        )
         shared.world_map = utils.WorldMap(
             "assets/map.json", [Floor, Player, Rose, Sunflower]
         )

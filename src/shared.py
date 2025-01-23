@@ -11,6 +11,7 @@ if t.TYPE_CHECKING:
 # Constants
 WORLD_GRAVITY = 70
 MAX_FALL_VELOCITY = 300
+FIRE_PIT_START_Y = 700
 
 # Canvas
 screen: pygame.Surface
