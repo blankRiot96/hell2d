@@ -39,14 +39,16 @@ class Core:
         self.state_manager.update()
 
     def draw(self):
-        shared.screen.fill("black")
+        shared.screen.fill((20, 20, 20))
         self.state_manager.draw()
         pygame.display.flip()
 
     def run(self):
-        while True:
+        while not shared.is_window_closed:
             self.update()
             self.draw()
+
+        self.state_manager.cleanup()
 
 
 def main():

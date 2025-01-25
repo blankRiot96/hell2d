@@ -6,12 +6,15 @@ import pygame
 
 if t.TYPE_CHECKING:
     from src.enums import State
-    from src.utils import Camera, WorldMap
+    from src.player import CharacterData, Player
+    from src.utils import Camera, UDPClient, WorldMap
 
 # Constants
 WORLD_GRAVITY = 70
 MAX_FALL_VELOCITY = 300
 FIRE_PIT_START_Y = 700
+DISCOVERY_PORT = 5001
+GAME_PORT = 6969
 
 # Canvas
 screen: pygame.Surface
@@ -34,6 +37,15 @@ clock: pygame.Clock
 next_state: State | None
 
 # Objects
+player: Player
+client: UDPClient
 world_map: WorldMap
+lobby_map: WorldMap
+character_data: CharacterData
 
 # Flags
+is_window_closed = False
+is_host = False
+
+# Junk
+server_ip: str

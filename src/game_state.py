@@ -12,13 +12,7 @@ class GameState:
     def clean_up_world(self):
         utils.Collider.all_colliders.clear()
 
-    def on_editor_state(self):
-        if shared.kp[pygame.K_e]:
-            shared.next_state = State.EDITOR
-
     def update(self):
-        self.on_editor_state()
-
         for entity in self.entities:
             entity.update()
 
