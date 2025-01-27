@@ -11,7 +11,7 @@ class LocalBroadcastServer:
         self.port = discovery_port
         self.server = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-        self.server.bind(("255.255.255.255", self.port))
+        self.server.bind(("0.0.0.0", self.port))
         self.broadcast_data = broadcast_data
         self.is_broadcasting = False
 

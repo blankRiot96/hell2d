@@ -1,6 +1,7 @@
 import typing as t
 
 from src import shared, utils
+from src.chests import Chest
 from src.editor_state import EditorState
 from src.enums import State
 from src.floor import Floor, Rose, Sunflower
@@ -34,7 +35,7 @@ class StateManager:
             + utils.load_image("assets/firepit.png", True, bound=True).get_height()
         )
 
-        entities = [Floor, ClientSpawnPoint, Rose, Sunflower]
+        entities = [Floor, ClientSpawnPoint, Rose, Sunflower, Chest]
         shared.world_map = utils.WorldMap("assets/map.json", entities)
         shared.lobby_map = utils.WorldMap("assets/lobby_map.json", entities)
 
