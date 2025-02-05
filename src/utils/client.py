@@ -38,6 +38,7 @@ class UDPClient:
         self.received_data: bytes = b""
 
     def start(self):
+        self.socket.connect(self.server_addr)
         self.is_alive = True
         threading.Thread(target=self.listen, daemon=True).start()
 
